@@ -13,9 +13,12 @@ for domain in $SSL_DOMAINS
 do
   CERTBOT_DOMAINS="${CERTBOT_DOMAINS} --domain $domain"
 done
-certbot certonly --webroot --agree-tos --webroot-path /usr/share/nginx/html $CERTBOT_DOMAINS
+
+CERT_CMD="certbot certonly --webroot --force-renewal --agree-tos --webroot-path /usr/share/nginx/html --domain $CERTBOT_DOMAINS"
+eval $CERT_CMD
 
 CRON_SCRIPT=/etc/periodic/weekly/cerbot-renew
-echo "certbot renew" > $CRON_SCRIPT
+echo $CERT_CMD > $CRON_SCRIPT
+echo "/usr/sbin/nginx -s reload" >> $CRON_SCRIPT
 chmod a+x $CRON_SCRIPT
 
