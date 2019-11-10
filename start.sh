@@ -1,6 +1,5 @@
 #!/bin/bash
 
-CURRENT_DIR=`pwd`
 NAME=nginx-https
 DOMAIN=www.domain.com
 EMAIL=security@domain.com

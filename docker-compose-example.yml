@@ -1,0 +1,54 @@
+version: '3'
+
+volumes:
+  data:
+    driver_opts:
+      type: none
+      device: /data/platform
+      o: bind
+networks:
+  frontend:
+  backend:
+services:
+  platform-www:
+    image: sirhill/nginx-https
+    restart: on-failure
+    container_name: platform-www
+    hostname: nginx
+    volumes:
+      - data/letsencrypt:/etc/letsencrypt
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - frontend
+    environment:
+      - DOMAIN=www.domain.com
+      - EMAIL=security@domain.com
+  platform-api:
+    image: node:8-alpine
+    restart: on-failure
+    container_name: platform-api
+    hostname: platform-api
+    expose:
+      - "3000"
+    networks:
+      - frontend
+      - backend
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - platform-mongo
+  platform-mongo:
+    image: mongo:latest
+    restart: on-failure
+    container_name: platform-mongo
+    hostname: platform-mongo
+    volumes:
+      - data/mongo:/data/db
+    expose:
+      - "27017"
+    networks:
+      - backend
+    # Log in Mongo and apply rs.initiate() at the first run
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0", "--journal", "--dbpath", "/data/db" ]
